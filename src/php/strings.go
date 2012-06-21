@@ -8,6 +8,7 @@ import (
 	"html"
 	"html/template"
 	"regexp"
+	"net/url"
 )
 
 /* ============================================================================================ */
@@ -297,45 +298,9 @@ func Join(arg string, array []string) string {
 	return strings.Join(array, arg)
 }
 /* ============================================================================================ */
-func ParceURL(url string) map[string]string {
-	url = Trim(url)
-	url = strings.Replace(url, ":///", "://", 1)
-	var result = make(map[string]string)
-	var array  []string
-	// get sheme
-	array = strings.Split(url, ":")
-	result["scheme"] = array[0]
-	// get host
-	array = strings.Split(url, "/")
-	array = strings.Split(array[2], "@")
-	result["host"] = array[len(array)-1]
-	// get user and pass
-	if len(array) == 2 {
-		array = strings.Split(array[0], ":")
-		result["user"] = array[0]
-		result["pass"] = array[1]
-	} else {
-		result["user"] = ""
-		result["pass"] = ""
-	}
-	// get path
-	array = strings.Split(url, "/")
-	array = strings.Split(array[3], "?")
-	result["path"] = "/"+array[0]
-	// get query
-	if len(array) == 2 {
-		array = strings.Split(array[1], "#")
-		result["query"] = array[0]
-	} else {
-		result["query"] = ""
-	}
-	// get fragment
-	if StrPos(url, "#", 0) > 0 {
-		array = strings.Split(url, "#")
-		result["fragment"] = array[len(array)-1]
-	} else {
-		result["fragment"] = ""
-	}
+func ParceURL(strUrl string) *url.URL {
+	result, err := url.Parse(strUrl)
+	setErr(err)
 	return result
 }
 /* ============================================================================================ */
