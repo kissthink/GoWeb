@@ -149,9 +149,9 @@ func MkDir(dirname string, mode int, recursive bool) bool {
 		mode = 0777
 	}
 	if recursive == true {
-		err = os.MkdirAll(dirname, 0777)
+		err = os.MkdirAll(dirname, mode)
 	} else {
-		err = os.Mkdir(dirname, 0777)
+		err = os.Mkdir(dirname, mode)
 	}
 	setErr(err)
 	if err == nil {
