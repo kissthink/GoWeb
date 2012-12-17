@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"php"
+	"./web"
 )
 
 func main() {
 
-	fmt.Println(php.Date("Y-m-d H:i:s", php.Time()))
+	fmt.Println(web.Date("Y-m-d H:i:s", web.Time()))
 
-	php.ShowError()
+	web.ShowError()
 }
 
