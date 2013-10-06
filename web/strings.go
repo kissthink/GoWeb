@@ -4,11 +4,13 @@
 package web
 
 import (
+    "strconv"
 	"strings"
 	"html"
 	"html/template"
 	"regexp"
 	"net/url"
+	"encoding/hex"
 )
 
 /* ============================================================================================ */
@@ -17,11 +19,11 @@ func Trim(str string) string {
 }
 /* ============================================================================================ */
 func LTrim(str string) string {
-	return strings.TrimLeft(str, " \n\r")
+	return strings.TrimLeft(str, " \n\r\t")
 }
 /* ============================================================================================ */
 func RTrim(str string) string {
-	return strings.TrimRight(str, " \n\r")
+	return strings.TrimRight(str, " \n\r\t")
 }
 /* ============================================================================================ */
 func HtmlSpecialChars(str string) string {
@@ -45,6 +47,18 @@ func UrlDecode(str string) string {
 	return str
 }
 /* ============================================================================================ */
+func RawUrlDecode(str string) string {
+    re, _ := regexp.Compile(`(?Ui)%[0-9A-F]{2}`)
+    str = re.ReplaceAllStringFunc(str, func(s string) string {
+        b, err := hex.DecodeString(s[1:])
+        if err == nil {
+            return string(b)
+        }
+        return s
+    })
+	return str
+}
+/* ============================================================================================ */
 func SubStr(str string, start int, length int) string {
 	if length == 0 {
 		length = len(str)
@@ -53,7 +67,7 @@ func SubStr(str string, start int, length int) string {
 	i      := 0
 	str     = ""
 	for i=start; i<start+length; i++ {
-		if i == len(strArr) {
+		if i >= len(strArr) {
 			break
 		}
 		str += strArr[i]
@@ -211,16 +225,16 @@ func StripSlashes(str string) string {
 	for StrPos(str, twoSlashes, 0) > -1 {
 		twoSlashes += "#"
 	}
-	str = strings.Replace(str, "\\\\", twoSlashes, -1)
-	str = strings.Replace(str, "\\", "", -1)
-	str = strings.Replace(str, twoSlashes, "\\", -1)
+	str = strings.Replace(str, `\\`, twoSlashes, -1)
+	str = strings.Replace(str, `\`, "", -1)
+	str = strings.Replace(str, twoSlashes, `\\`, -1)
 	return str
 }
 /* ============================================================================================ */
 func AddSlashes(str string) string {
-	str = strings.Replace(str, "\\", "\\\\", -1)
-	str = strings.Replace(str, "\"", "\\\"", -1)
-	str = strings.Replace(str, "'", "\\'", -1)
+	str = strings.Replace(str, `\`, `\\`, -1)
+	str = strings.Replace(str, `"`, `\"`, -1)
+	str = strings.Replace(str, `'`, `\'`, -1)
 	str = strings.Replace(str, "`", "\\`", -1)
 	return str
 }
@@ -289,7 +303,7 @@ func ChunkSplit(str string, chunkLen int, end string) string {
 			j = 0
 		}
 	}
-	return str
+	return str+"\r\n"
 }
 /* ============================================================================================ */
 func Explode(arg string, str string, maxlimit int) []string {
@@ -305,6 +319,25 @@ func Implode(arg string, array []string) string {
 /* ============================================================================================ */
 func Join(arg string, array []string) string {
 	return strings.Join(array, arg)
+}
+/* ============================================================================================ */
+func IntJoin(a []int, sep string) string {
+    var buf []string
+    for _, val := range a {
+        buf = append(buf, strconv.Itoa(val))
+    }
+    return strings.Join(buf, sep)
+}
+/* ============================================================================================ */
+func IntSplit(s, sep string) []int {
+    var result []int
+    for _, val := range strings.Split(s, sep) {
+        iVal, err := strconv.Atoi(val)
+        if err == nil {
+            result = append(result, iVal)
+        }
+    }
+    return result
 }
 /* ============================================================================================ */
 func ParceURL(strUrl string) *url.URL {
@@ -334,8 +367,11 @@ func UcWords(str string) string {
 	}
 	return strings.Join(strArr, " ")
 }
-
-
+/* ============================================================================================ */
+func StripTags(s string) string {
+    reg, _ := regexp.Compile(`(?Uis)<.*>`)
+    return string(reg.ReplaceAll([]byte(s), []byte("")))
+}
 
 
 

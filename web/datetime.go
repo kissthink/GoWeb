@@ -6,33 +6,62 @@ package web
 import (
 	"time"
 	"strconv"
+	"strings"
 )
 /* ============================================================================================ */
 func prepare(format string) string {
-	format = StrReplace("d", "02", format)
-	format = StrReplace("D", "Mon", format)
-	format = StrReplace("j", "_2", format)
-	format = StrReplace("l", "Monday", format)
-	format = StrReplace("F", "January", format)
-	format = StrReplace("m", "01", format)
-	format = StrReplace("M", "Jan", format)
-	format = StrReplace("n", "_1", format)
-	format = StrReplace("t", "31", format)
-	format = StrReplace("Y", "2006", format)
-	format = StrReplace("y", "06", format)
-	format = StrReplace("a", "pm", format)
-	format = StrReplace("A", "PM", format)
-	format = StrReplace("g", "3", format)
-	format = StrReplace("G", "15", format)// Что-то нет, 24 часового формата без ведущего нуля (((
-	format = StrReplace("H", "15", format)
-	format = StrReplace("h", "03", format)
-	format = StrReplace("i", "04", format)
-	format = StrReplace("s", "05", format)
-	format = StrReplace("O", "-0700", format)
-	format = StrReplace("P", "-07:00", format)
-	format = StrReplace("T", "MST", format)
-	format = StrReplace("Z", "Z0700", format)
-	return format
+    var formatArr = strings.Split(format, "")
+    for i, _ := range formatArr {
+        switch formatArr[i] {
+            case "d":
+                formatArr[i] = "02"
+            case "j":
+                formatArr[i] = "_2"
+            case "m":
+                formatArr[i] = "01"
+            case "n":
+                formatArr[i] = "_1"
+            case "t":
+                formatArr[i] = "31"
+            case "Y":
+                formatArr[i] = "2006"
+            case "y":
+                formatArr[i] = "06"
+            case "a":
+                formatArr[i] = "pm"
+            case "A":
+                formatArr[i] = "PM"
+            case "g":
+                formatArr[i] = "3"
+            case "G":
+                formatArr[i] = "15"// Что-то нет, 24 часового формата без ведущего нуля (((
+            case "H":
+                formatArr[i] = "15"
+            case "h":
+                formatArr[i] = "03"
+            case "i":
+                formatArr[i] = "04"
+            case "s":
+                formatArr[i] = "05"
+            case "O":
+                formatArr[i] = "-0700"
+            case "P":
+                formatArr[i] = "-07:00"
+            case "T":
+                formatArr[i] = "MST"
+            case "Z":
+                formatArr[i] = "Z0700"
+            case "D":
+                formatArr[i] = "Mon"
+            case "l":
+                formatArr[i] = "Monday"
+            case "F":
+                formatArr[i] = "January"
+            case "M":
+                formatArr[i] = "Jan"
+        }
+    }
+	return strings.Join(formatArr, "")
 }
 /* ============================================================================================ */
 func Date(format string, timestamp int64) string {
@@ -63,7 +92,7 @@ func StrToTime(strTime string, format string) int64 {
 	} else {
 		format = prepare(format)
 	}
-	t, err := time.Parse(format, strTime)
+	t, err := time.Parse(format, Trim(strTime))
 	setErr(err)
 	if err != nil {
 		return 0

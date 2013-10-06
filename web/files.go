@@ -9,7 +9,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"syscall"
+	"path/filepath"
 )
+/* ============================================================================================ */
+func PathInfo(path string) string {
+    var result []string
+    var arr    = strings.Split(path, "/")
+    for i:=0; i<len(arr)-1; i++ {
+        result = append(result, arr[i])
+    }
+    return strings.Join(result, "/")
+}
 /* ============================================================================================ */
 func BaseName(path string, suffix string) string {
 	stat, err := os.Stat(path)
@@ -58,15 +68,7 @@ func Copy(source string, dest string) bool {
 }
 /* ============================================================================================ */
 func DirName(path string) string {
-	//@TODO Должна таки быть в Go своя функция!??
-	pathArr := strings.Split(path, "/")
-	if len(pathArr) == 1 {
-		return pathArr[0]
-	}
-	if pathArr[len(pathArr)-1] == "" {
-		return "/"+pathArr[len(pathArr)-3]
-	} 
-	return "/"+pathArr[len(pathArr)-2]
+	return filepath.Dir(path)
 }
 /* ============================================================================================ */
 func FileExists(filename string) bool {
