@@ -291,19 +291,28 @@ func StrPad(str string, padLength int, padStr string, padType int) string {
 }
 /* ============================================================================================ */
 func ChunkSplit(str string, chunkLen int, end string) string {
-	strArr := strings.Split(str, "")
-	str = ""
-	var i int
-	var j int
-	for i=0; i<len(strArr); i++ {
-		j++
-		str += strArr[i]
-		if j == chunkLen {
-			str += end
-			j = 0
-		}
-	}
-	return str+"\r\n"
+    var rStr = []rune(str)
+    var rEnd = []rune(end)
+    var result []rune
+
+    if chunkLen <= 0 {
+        chunkLen = 76
+    }
+    if len(rEnd) == 0 {
+        rEnd = []rune("\r\n")
+    }
+
+    for i:=0; i<len(rStr); i+=chunkLen {
+        from := i
+        to   := i+chunkLen
+        if to >= len(rStr) {
+            to = len(rStr)-1
+        }
+        result = append(result, rStr[from:to]...)
+        result = append(result, rEnd...)
+    }
+
+	return string(result)
 }
 /* ============================================================================================ */
 func Explode(arg string, str string, maxlimit int) []string {
@@ -331,7 +340,7 @@ func IntJoin(a []int, sep string) string {
 /* ============================================================================================ */
 func IntSplit(s, sep string) []int {
     var result []int
-    for _, val := range strings.Split(s, sep) {
+    for _, val := range strings.Split(strings.Trim(s, "{}"), sep) {
         iVal, err := strconv.Atoi(val)
         if err == nil {
             result = append(result, iVal)

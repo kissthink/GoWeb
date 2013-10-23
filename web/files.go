@@ -193,7 +193,11 @@ func FileGetContents(filename string) string {
 		var res *http.Response
 		res, err = http.Get(filename)
 		setErr(err)
-		defer res.Body.Close()
+		defer func() {
+		    if res != nil && res.Body != nil {
+		        res.Body.Close()
+		    }
+		}()
 		file, err = ioutil.ReadAll(res.Body)
 		setErr(err)
 	}
