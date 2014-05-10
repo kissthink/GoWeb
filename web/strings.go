@@ -27,7 +27,9 @@ func RTrim(str string) string {
 }
 /* ============================================================================================ */
 func HtmlSpecialChars(str string) string {
-	return html.EscapeString(str)
+	str = html.EscapeString(str)
+	str = strings.Replace(str, `&#34;`, `&quot;`, -1)
+	return str
 }
 /* ============================================================================================ */
 func HtmlSpecialCharsDecode(str string) string {
@@ -60,6 +62,9 @@ func RawUrlDecode(str string) string {
 }
 /* ============================================================================================ */
 func SubStr(str string, start int, length int) string {
+    if start < 0 {
+        start = 0
+    }
 	if length == 0 {
 		length = len(str)
 	}
@@ -291,7 +296,7 @@ func StrPad(str string, padLength int, padStr string, padType int) string {
 }
 /* ============================================================================================ */
 func ChunkSplit(str string, chunkLen int, end string) string {
-    var rStr = []rune(str)
+    var rStr = []rune(str+" ")
     var rEnd = []rune(end)
     var result []rune
 
@@ -312,7 +317,7 @@ func ChunkSplit(str string, chunkLen int, end string) string {
         result = append(result, rEnd...)
     }
 
-	return string(result)
+	return strings.TrimSpace(string(result))
 }
 /* ============================================================================================ */
 func Explode(arg string, str string, maxlimit int) []string {
@@ -341,7 +346,26 @@ func IntJoin(a []int, sep string) string {
 func IntSplit(s, sep string) []int {
     var result []int
     for _, val := range strings.Split(strings.Trim(s, "{}"), sep) {
-        iVal, err := strconv.Atoi(val)
+        iVal, err := strconv.Atoi(strings.TrimSpace(val))
+        if err == nil {
+            result = append(result, iVal)
+        }
+    }
+    return result
+}
+/* ============================================================================================ */
+func Int64Join(a []int64, sep string) string {
+    var buf []string
+    for _, val := range a {
+        buf = append(buf, strconv.FormatInt(val, 10))
+    }
+    return strings.Join(buf, sep)
+}
+/* ============================================================================================ */
+func Int64Split(s, sep string) []int64 {
+    var result []int64
+    for _, val := range strings.Split(strings.Trim(s, "{}"), sep) {
+        iVal, err := strconv.ParseInt(val, 10, 64)
         if err == nil {
             result = append(result, iVal)
         }
@@ -378,7 +402,9 @@ func UcWords(str string) string {
 }
 /* ============================================================================================ */
 func StripTags(s string) string {
-    reg, _ := regexp.Compile(`(?Uis)<.*>`)
+    reg, _ := regexp.Compile(`(?Uis)<script[^>]*>.*</script>`)
+    s = string(reg.ReplaceAll([]byte(s), []byte("")))
+    reg, _ = regexp.Compile(`(?Uis)<.*>`)
     return string(reg.ReplaceAll([]byte(s), []byte("")))
 }
 
