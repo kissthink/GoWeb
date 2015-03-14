@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"net/url"
 	"encoding/hex"
+	"unicode"
 )
 
 /* ============================================================================================ */
@@ -50,7 +51,7 @@ func UrlDecode(str string) string {
 }
 /* ============================================================================================ */
 func RawUrlDecode(str string) string {
-    re, _ := regexp.Compile(`(?Ui)%[0-9A-F]{2}`)
+    re := regexp.MustCompile(`(?Ui)%[0-9A-F]{2}`)
     str = re.ReplaceAllStringFunc(str, func(s string) string {
         b, err := hex.DecodeString(s[1:])
         if err == nil {
@@ -167,19 +168,56 @@ func StrLen(str string) int {
 }
 /* ============================================================================================ */
 func WordWrap(str string, width int, breakStr string, cut bool) string {
-	strArr := strings.Split(str, "")
-	str = ""
-	var i, j int
-	for i=0; i<len(strArr); i++ {
-		j++
-		if j >= width && (strArr[i] == " " || cut == true) {
-			str += breakStr + strArr[i]
-			j = 0
-		} else {
-			str += strArr[i]		
+    var brRune = []rune(breakStr)
+    var strArr = []rune(str)
+    var res    []rune
+    var i, j   int
+
+    for i=0; i<len(strArr); i++ {
+        j++
+		if j >= width && (unicode.IsSpace(strArr[i]) == true || cut == true) {
+		    j   = 0
+		    res = append(res, brRune...)
 		}
+		res = append(res, strArr[i])
+    }
+	return string(res)
+}
+/* ============================================================================================ */
+func HtmlWrap(str string, width int, breakStr string, cut bool) string {
+    var brRune  = []rune(breakStr)
+	var last    = str
+	var lines   []string
+	var counter int
+
+	re := regexp.MustCompile(`(?Ui)<[^>]*>`)
+	for _, htmlTag := range re.FindAllString(str, -1) {
+		arr := strings.SplitN(last, htmlTag, 2)
+		if len(arr[0]) > 0 {
+			lines = append(lines, arr[0])
+		}
+		lines = append(lines, htmlTag)
+		last  = arr[1]
 	}
-	return str
+	if len(last) > 0  {
+	    lines = append(lines, last)
+	}
+	for i, line := range lines {
+	    if strings.HasPrefix(line, "<") == false && strings.HasSuffix(line, ">") == false {
+            var strArr = []rune(line)
+            var res    []rune
+            for j:=0; j<len(strArr); j++ {
+                counter++
+                if counter >= width && (unicode.IsSpace(strArr[j]) == true || cut == true) {
+                    counter = 0
+                    res     = append(res, brRune...)
+                }
+                res = append(res, strArr[j])
+            }
+            lines[i] = string(res)
+	    }
+	}
+    return strings.Join(lines, "")
 }
 /* ============================================================================================ */
 func StrReplace(from string, to string, str string) string {
@@ -402,9 +440,9 @@ func UcWords(str string) string {
 }
 /* ============================================================================================ */
 func StripTags(s string) string {
-    reg, _ := regexp.Compile(`(?Uis)<script[^>]*>.*</script>`)
+    reg := regexp.MustCompile(`(?Uis)<script[^>]*>.*</script>`)
     s = string(reg.ReplaceAll([]byte(s), []byte("")))
-    reg, _ = regexp.Compile(`(?Uis)<.*>`)
+    reg = regexp.MustCompile(`(?Uis)<.*>`)
     return string(reg.ReplaceAll([]byte(s), []byte("")))
 }
 

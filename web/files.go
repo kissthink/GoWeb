@@ -8,6 +8,8 @@ import (
 	"strings"
 	"io/ioutil"
 	"net/http"
+	"net"
+	"time"
 	"syscall"
 	"path/filepath"
 )
@@ -190,16 +192,28 @@ func FileGetContents(filename string) string {
 		file, err = ioutil.ReadFile(filename)
 		setErr(err)
 	} else {
-		var res *http.Response
-		res, err = http.Get(filename)
+	    var timeout     = time.Duration(10 * time.Second)
+        var dialTimeout = func (network, addr string) (net.Conn, error) {
+            return net.DialTimeout(network, addr, timeout)
+        }
+        transport := http.Transport{
+            Dial: dialTimeout,
+        }
+        client := http.Client{
+            Transport: &transport,
+        }
+        var res *http.Response
+        res, err := client.Get(filename)
 		setErr(err)
 		defer func() {
 		    if res != nil && res.Body != nil {
 		        res.Body.Close()
 		    }
 		}()
-		file, err = ioutil.ReadAll(res.Body)
-		setErr(err)
+		if res != nil && res.Body != nil {
+            file, err = ioutil.ReadAll(res.Body)
+            setErr(err)
+		}
 	}
 	return string(file)
 }
